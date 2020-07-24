@@ -1,0 +1,30 @@
+{
+  "envId": "ygapp-test-c1dj2",
+  "functionRoot": "cloudfunctions",
+  "functions": [
+    {
+      "name": "shop_cms_service",
+      "config": {
+        "timeout": 5,
+        "envVariables": {},
+        "runtime": "Nodejs10.15",
+        "memorySize": 128
+      }
+    }
+  ],
+  "framework": {
+    "name": "nuxt-ssr",
+    "plugins": {
+      "client": {
+        "use": "@cloudbase/framework-plugin-nuxt",
+        "inputs": {}
+      },
+      "server": {
+        "use": "@cloudbase/framework-plugin-function",
+        "inputs": {
+          "outputPath": "functionRootPath"
+        }
+      }
+    }
+  }
+}

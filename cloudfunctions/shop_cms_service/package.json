@@ -1,0 +1,15 @@
+{
+  "name": "shop_cms_service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "tcb-admin-node": "^1.23.0",
+    "tcb-router": "^1.1.2"
+  }
+}
