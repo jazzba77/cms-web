@@ -23,7 +23,9 @@
       </template>
     </my-aside>
     <el-main>
-      <nuxt-child></nuxt-child>
+      <el-scrollbar>
+        <nuxt-child></nuxt-child>
+      </el-scrollbar>
     </el-main>
   </el-container>
 </template>
@@ -43,7 +45,11 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.el-aside {
-  width: 200px;
+.el-main {
+  padding: 0;
+}
+
+.el-scrollbar {
+  height: calc(100vh - 60px);
 }
 </style>

@@ -8,6 +8,7 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "dev": "nuxt",
+    "spa": "nuxt --s",
     "deploy": "cloudbase framework:deploy",
     "deploy:client": "cloudbase framework:deploy client",
     "deploy:server": "cloudbase framework:deploy server",

@@ -2,7 +2,7 @@ export default {
   mode: 'universal',
 
   server: {
-    port: 5000, // default: 3000
+    port: 5500, // default: 3000
     host: '127.0.0.1', // default: localhost
   },
 
@@ -46,7 +46,7 @@ export default {
   /*
    ** Customize the progress-bar color
    */
-  loading: { color: '#fff' },
+  loading: { color: '#409eff' },
   /*
    ** Global CSS
    */

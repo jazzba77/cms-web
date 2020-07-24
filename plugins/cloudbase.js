@@ -8,6 +8,7 @@ const callFunction = async (data) => {
     const res = await Vue.prototype.$cloudbase.callFunction({
       name: SERVICE_NAME,
       data,
+      parse: true,
     })
     console.log('callFunction: ', data, res.result)
     return res.result

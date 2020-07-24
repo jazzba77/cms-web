@@ -5,7 +5,13 @@
         <el-image class="logo" src="/image/logo.png" fit="contain" />
         <h2>内容管理系统</h2>
       </div>
-      <el-form ref="loginForm" class="form" :model="user" :rules="rules">
+      <el-form
+        ref="loginForm"
+        class="form"
+        :model="user"
+        :rules="rules"
+        @submit.native.prevent
+      >
         <el-form-item prop="username">
           <el-input
             v-model="user.username"
@@ -20,7 +26,10 @@
           ></el-input>
         </el-form-item>
         <el-form-item class="btns">
-          <el-button type="primary" @click="submitForm('loginForm')"
+          <el-button
+            type="primary"
+            native-type="submit"
+            @click="submitForm('loginForm')"
             >登录</el-button
           >
           <el-button @click="resetForm('loginForm')">重置</el-button>
