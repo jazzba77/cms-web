@@ -10,7 +10,7 @@ const callFunction = async (data) => {
       data,
       parse: true,
     })
-    console.log('callFunction: ', data, res.result)
+    console.dir('callFunction: ', data, res.result)
     return res.result
   } catch (err) {
     console.log('callFunction error: ', data, err)

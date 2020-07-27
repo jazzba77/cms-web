@@ -18,5 +18,9 @@ exports.main = async (event, context) => {
     ctx.body = await require('./routes/banner').get(db)
   })
 
+  app.router('banner/update', async (ctx, next) => {
+    ctx.body = await require('./routes/banner').update(db, event.data)
+  })
+
   return app.serve()
 }
