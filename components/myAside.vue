@@ -2,7 +2,9 @@
   <el-aside :width="asideWidth">
     <div class="aside-ctrl" @click="asideCtrl">|||</div>
     <el-menu
-      :default-active="$route.path"
+      :default-active="
+        '/' + $route.path.split('/')[1] + '/' + $route.path.split('/')[2]
+      "
       background-color="#535353"
       text-color="#fff"
       active-text-color="#409eff"

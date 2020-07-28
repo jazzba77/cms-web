@@ -9,33 +9,43 @@
     </el-row>
     <el-row>
       <el-card>
-        <el-row class="table-top" type="flex" justify="end">
-          <el-button class="btn-add" type="primary" icon="el-icon-plus"
-            >添加广告</el-button
+        <el-row type="flex" justify="end">
+          <el-button type="primary" size="small" icon="el-icon-plus"
+            >添加</el-button
+          >
+          <el-button size="small" icon="el-icon-upload2">导入</el-button>
+          <el-button size="small" icon="el-icon-download">导出</el-button>
+          <el-button type="danger" size="small" icon="el-icon-delete"
+            >删除</el-button
           >
         </el-row>
         <el-row>
           <el-table
+            ref="elTable"
             :data="
               bannerList.slice(
                 (currentPage - 1) * pageSize,
                 currentPage * pageSize
               )
             "
+            highlight-current-row
+            :row-key="getRowKey"
             @row-click="clickRow"
           >
-            <el-table-column type="index" label="#" width="50">
+            <el-table-column type="selection" reserve-selection width="50">
             </el-table-column>
-            <el-table-column prop="title" label="标题" width="150">
+            <el-table-column type="index" label="#" width="50">
             </el-table-column>
             <el-table-column prop="img_url" label="图片" width="120">
               <template slot-scope="scope">
                 <el-image :src="scope.row.img_url" fit="cover" />
               </template>
             </el-table-column>
-            <el-table-column prop="url" label="关联链接" width="300">
+            <el-table-column prop="title" label="标题" width="150">
             </el-table-column>
-            <el-table-column prop="enabled" label="启用状态" width="100">
+            <el-table-column prop="url" label="关联链接" width="250">
+            </el-table-column>
+            <el-table-column prop="enabled" label="启用状态" width="80">
               <template slot-scope="scope">
                 <el-switch
                   v-model="scope.row.enabled"
@@ -57,20 +67,30 @@
                   v-model="scope.row.sort_order"
                   controls-position="right"
                   :min="1"
-                  :max="bannerList.length"
+                  :max="bannerList.length * 2"
                   size="small"
-                  @change="debouncedChangeSort"
+                  @change="debouncedChangeSort(scope.row)"
                 ></el-input-number>
               </template>
             </el-table-column>
             <el-table-column prop="remark" label="备注"> </el-table-column>
             <el-table-column label="操作" width="200">
-              <el-button type="primary" size="mini" icon="el-icon-edit"
-                >编辑</el-button
-              >
-              <el-button type="danger" size="mini" icon="el-icon-delete"
-                >删除</el-button
-              >
+              <template slot-scope="scope">
+                <el-button
+                  type="primary"
+                  size="mini"
+                  icon="el-icon-edit"
+                  @click="goEdit(scope.row)"
+                  >编辑</el-button
+                >
+                <el-button
+                  type="danger"
+                  size="mini"
+                  icon="el-icon-delete"
+                  @click="remove(scope.row)"
+                  >删除</el-button
+                >
+              </template>
             </el-table-column>
           </el-table>
         </el-row>
@@ -102,7 +122,6 @@ export default {
       imageList: [],
       currentPage: 1,
       pageSize: 10,
-      curRow: null,
     }
   },
   mounted() {
@@ -110,6 +129,10 @@ export default {
     this.debouncedChangeSort = utils.debounce(this.changeSort)
   },
   methods: {
+    getRowKey(row) {
+      return row._id
+    },
+
     handleSizeChange(val) {
       this.pageSize = val
       this.currentPage = 1
@@ -141,16 +164,25 @@ export default {
     },
 
     clickRow(row) {
-      this.curRow = row
+      this.$refs.elTable.setCurrentRow(row)
     },
 
-    changeSort() {
+    changeSort(row) {
       this.$callFunction({
         $url: 'banner/update',
-        data: { _id: this.curRow._id, sort_order: this.curRow.sort_order },
+        data: { _id: row._id, sort_order: row.sort_order },
       }).then(() => {
         this.refreshTable()
       })
+    },
+
+    goEdit(row) {
+      console.log('goEdit', row)
+      this.$router.push({ path: '/content/banner/edit', query: { row } })
+    },
+
+    remove(row) {
+      console.log('goEdit', row)
     },
   },
 }
@@ -185,13 +217,6 @@ export default {
   .el-image {
     width: 100px;
     height: 50px;
-  }
-}
-
-.table-top {
-  .btn-add {
-    width: 160px;
-    margin-right: 30px;
   }
 }
 
