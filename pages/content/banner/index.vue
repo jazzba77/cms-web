@@ -10,11 +10,19 @@
     <el-row>
       <el-card>
         <el-row type="flex" justify="end">
-          <el-button type="primary" size="small" icon="el-icon-plus"
+          <el-button
+            type="primary"
+            size="small"
+            icon="el-icon-plus"
+            @click="goEdit"
             >添加</el-button
           >
-          <el-button size="small" icon="el-icon-upload2">导入</el-button>
-          <el-button size="small" icon="el-icon-download">导出</el-button>
+          <el-button plain type="primary" size="small" icon="el-icon-upload2"
+            >导入</el-button
+          >
+          <el-button plain type="primary" size="small" icon="el-icon-download"
+            >导出</el-button
+          >
           <el-button type="danger" size="small" icon="el-icon-delete"
             >删除</el-button
           >
@@ -67,7 +75,7 @@
                   v-model="scope.row.sort_order"
                   controls-position="right"
                   :min="1"
-                  :max="bannerList.length * 2"
+                  :max="99"
                   size="small"
                   @change="debouncedChangeSort(scope.row)"
                 ></el-input-number>
@@ -176,9 +184,11 @@ export default {
       })
     },
 
-    goEdit(row) {
-      console.log('goEdit', row)
-      this.$router.push({ path: '/content/banner/edit', query: { row } })
+    goEdit(row = { _id: 'new' }) {
+      this.$router.push({
+        name: 'content-banner-id',
+        params: { id: row._id, row },
+      })
     },
 
     remove(row) {

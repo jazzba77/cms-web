@@ -29,3 +29,15 @@ body {
 .el-select-dropdown__list {
   padding-bottom: 20px !important;
 }
+
+.el-page-header__content {
+  font-size: 14px !important ;
+}
+
+.el-page-header__title {
+  color: #409eff !important;
+}
+
+.el-page-header {
+  margin-bottom: 20px !important;
+}
