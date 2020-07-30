@@ -14,7 +14,7 @@
             type="primary"
             size="small"
             icon="el-icon-plus"
-            @click="goEdit"
+            @click="goEdit()"
             >添加</el-button
           >
           <el-button plain type="primary" size="small" icon="el-icon-upload2"
