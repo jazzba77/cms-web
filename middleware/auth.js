@@ -1,20 +1,9 @@
 import utils from '~/utils/utils'
 
-export default function ({ route, store, req, res, redirect }) {
+export default function ({ route, store, req, redirect }) {
   if (route.path === '/login') return
 
-  const isClient = process.client
-  const isServer = process.server
-  let token
-
-  if (isServer) {
-    const cookies = utils.getCookiesInServer(req)
-    token = cookies.token ? cookies.token : ''
-  }
-
-  if (isClient) {
-    token = utils.getCookiesInClient('token')
-  }
+  const token = utils.getCookies(req, 'token')
 
   if (!token) {
     redirect('/login')

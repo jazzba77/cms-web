@@ -185,6 +185,7 @@ export default {
     },
 
     goEdit(row = { _id: 'new' }) {
+      this.$cookie.set('banner', JSON.stringify(row))
       this.$router.push({
         name: 'content-banner-id',
         params: { id: row._id, row },

@@ -24,7 +24,9 @@
     </my-aside>
     <el-main>
       <el-scrollbar>
-        <nuxt-child></nuxt-child>
+        <keep-alive>
+          <nuxt-child></nuxt-child>
+        </keep-alive>
       </el-scrollbar>
     </el-main>
   </el-container>

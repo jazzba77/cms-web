@@ -41,6 +41,12 @@
 
 <script>
 export default {
+  // watchQuery: true,
+
+  // key(route) {
+  //   return route.fullPath
+  // },
+
   data() {
     return {}
   },

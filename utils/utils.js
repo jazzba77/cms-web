@@ -68,7 +68,18 @@ function getCookiesInServer(req) {
       .split(';')
       .forEach(function (val) {
         const parts = val.split('=')
-        cookies[parts[0].trim()] = (parts[1] || '').trim()
+        const value = parts.reduce((pre, cur, index) => {
+          if (index === 0) {
+            return pre
+          } else if (index === 1) {
+            return (pre += cur)
+          } else {
+            return (pre += '=' + cur)
+          }
+        }, '')
+        // console.log(parts[0], value)
+        cookies[parts[0].trim()] = (value || '').trim()
+        // cookies[parts[0].trim()] = (parts[1] || '').trim()
       })
   return cookies
 }
@@ -78,10 +89,20 @@ function getCookiesInClient(key) {
   return Cookie.get(key) ? Cookie.get(key) : ''
 }
 
+function getCookies(req, key) {
+  if (process.server) {
+    const cookies = getCookiesInServer(req)
+    return cookies[key] ? cookies[key] : ''
+  }
+
+  if (process.client) {
+    return getCookiesInClient(key)
+  }
+}
+
 export default {
   throttle,
   debounce,
   getUID,
-  getCookiesInServer,
-  getCookiesInClient,
+  getCookies,
 }

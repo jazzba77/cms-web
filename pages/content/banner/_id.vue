@@ -1,10 +1,7 @@
 <template>
   <div class="container">
     <el-card>
-      <el-page-header
-        :content="$route.query.action === 'edit' ? '编辑' : '添加'"
-        @back="goBack"
-      >
+      <el-page-header :content="row._id ? '编辑' : '添加'" @back="goBack">
       </el-page-header>
       <el-row>
         <el-col ref="rowForm" :span="12">
@@ -22,8 +19,12 @@
                 :http-request="uploadSuccess"
                 action=""
               >
-                <el-image v-if="row.img_url" :src="row.img_url" fit="cover" />
-                <i v-else class="el-icon-plus"></i>
+                <!-- <el-image v-if="row.img_url" :src="row.img_url" fit="cover" /> -->
+                <CloudFile v-if="fileID !== ''" :id="fileID" v-slot="{ url }">
+                  {{ url }}
+                  <!-- <el-image :src="url" fit="cover" /> -->
+                </CloudFile>
+                <i v-if="fileID === ''" class="el-icon-plus"></i>
               </el-upload>
             </el-form-item>
             <el-form-item label="标题" prop="title">
@@ -64,22 +65,27 @@
 </template>
 
 <script>
+import utils from '~/utils/utils'
+
 export default {
+  asyncData({ params, req }) {
+    // console.log('banner ', utils.getCookies(req, 'banner'))
+
+    if (params.id !== 'new') {
+      return { row: params.row || JSON.parse(utils.getCookies(req, 'banner')) }
+    } else {
+      return { row: { sort_order: 1, enabled: 0 } }
+    }
+  },
   data() {
     return {
-      fileList: null,
-      fileName: '',
-      row: { sort_order: 1, enabled: 0 },
+      fileID: '',
       rules: {
         url: [{ required: true, message: '请输入关联链接', trigger: 'blur' }],
       },
     }
   },
-  created() {
-    if (this.$route.params.id !== 'new') {
-      this.row = this.$route.params.row
-    }
-  },
+
   methods: {
     goBack() {
       this.$router.back()
@@ -99,21 +105,11 @@ export default {
       return true
     },
     uploadSuccess(file) {
-      return this.$cloudbase
-        .uploadFile({
-          cloudPath: 'shop/' + file.name,
-          filePath: file.file,
-        })
-        .then((res) => {
-          console.log('upload success! ', res)
-        })
-        .catch((err) => console.log('upload failed! ', err))
-      // const formData = new FormData()
-      // formData.append('file', file.file)
-      // this.fileList = formData
-      // this.fileName = file.file.name
-      // console.log('fileList', formData)
-      // console.log('file', file.file)
+      return this.$uploadFile(file, 'shop/banner').then((res) => {
+        this.row.fileID = res.fileID
+        this.fileID = res.fileID
+        this.$forceUpdate()
+      })
     },
   },
 }
