@@ -26,9 +26,30 @@ const uploadFile = (file, dir) => {
       filePath: file.file,
     })
     .then((res) => {
-      console.log('upload success: ', res)
+      console.log('uploadFile success: ', res)
+      return res
     })
-    .catch((err) => console.log('upload failed: ', err))
+    .catch((err) => {
+      console.log('uploadFile failed: ', err)
+      return err
+    })
+}
+
+const deleteFile = (fileList) => {
+  return Vue.prototype.$cloudbase
+    .deleteFile({
+      fileList,
+    })
+    .then((res) => {
+      res.fileList.forEach((el) => {
+        if (el.code === 'SUCCESS') {
+          // 删除成功
+          console.log('deleteFile success: ', el.fileID)
+        } else {
+          console.log('deleteFile failed: ', el.code)
+        }
+      })
+    })
 }
 
 Vue.use(Cloudbase, {
@@ -37,6 +58,7 @@ Vue.use(Cloudbase, {
 
 Vue.prototype.$callFunction = callFunction
 Vue.prototype.$uploadFile = uploadFile
+Vue.prototype.$deleteFile = deleteFile
 Vue.prototype.$user = {}
 
 console.log('cloudbase plugin')

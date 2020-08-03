@@ -16,12 +16,19 @@ async function update(db, data) {
 
   const newVal = { ...data }
 
-  console.log('shop_banner update', condition, newVal)
+  console.log('shop_banner update ', condition, newVal)
   const res = await db.collection('shop_banner').where(condition).update(newVal)
+  return res
+}
+
+async function add(db, data) {
+  const res = await db.collection('shop_banner').add(data)
+  console.log('shop_banner add ', data, res)
   return res
 }
 
 module.exports = {
   get,
   update,
+  add,
 }

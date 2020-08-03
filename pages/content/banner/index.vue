@@ -3,7 +3,14 @@
     <el-row>
       <el-carousel trigger="click" height="300px">
         <el-carousel-item v-for="(item, index) in imageList" :key="index">
-          <el-image :src="item" fit="cover" />
+          <el-image v-if="item.startsWith('http://')" :src="item" fit="cover" />
+          <CloudFile
+            v-else-if="item.startsWith('cloud://')"
+            :id="item"
+            v-slot="{ url }"
+          >
+            <el-image :src="url" fit="cover" />
+          </CloudFile>
         </el-carousel-item>
       </el-carousel>
     </el-row>
@@ -44,12 +51,29 @@
             </el-table-column>
             <el-table-column type="index" label="#" width="50">
             </el-table-column>
+            <el-table-column prop="title" label="标题" width="150">
+            </el-table-column>
             <el-table-column prop="img_url" label="图片" width="120">
               <template slot-scope="scope">
-                <el-image :src="scope.row.img_url" fit="cover" />
+                <!-- <el-image :src="scope.row.img_url" fit="cover" /> -->
+                <el-image
+                  v-if="
+                    scope.row.img_url && scope.row.img_url.startsWith('http://')
+                  "
+                  :src="scope.row.img_url"
+                  fit="cover"
+                />
+                <CloudFile
+                  v-else-if="
+                    scope.row.img_url &&
+                    scope.row.img_url.startsWith('cloud://')
+                  "
+                  :id="scope.row.img_url"
+                  v-slot="{ url }"
+                >
+                  <el-image :src="url" fit="cover" />
+                </CloudFile>
               </template>
-            </el-table-column>
-            <el-table-column prop="title" label="标题" width="150">
             </el-table-column>
             <el-table-column prop="url" label="关联链接" width="250">
             </el-table-column>
@@ -184,6 +208,19 @@ export default {
       })
     },
 
+    removeRow(row) {
+      this.$callFunction({
+        $url: 'banner/update',
+        data: { _id: row._id, is_delete: 1 },
+      }).then(() => {
+        this.$message({
+          type: 'success',
+          message: '删除成功!',
+        })
+        this.refreshTable()
+      })
+    },
+
     goEdit(row = { _id: 'new' }) {
       this.$cookie.set('banner', JSON.stringify(row))
       this.$router.push({
@@ -193,7 +230,21 @@ export default {
     },
 
     remove(row) {
-      console.log('goEdit', row)
+      this.$confirm('此操作将删除该记录, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      })
+        .then(() => {
+          console.log('remove', row)
+          this.removeRow(row)
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除',
+          })
+        })
     },
   },
 }
