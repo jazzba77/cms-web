@@ -3,14 +3,20 @@
     <el-row>
       <el-carousel trigger="click" height="300px">
         <el-carousel-item v-for="(item, index) in imageList" :key="index">
-          <el-image v-if="item.startsWith('http://')" :src="item" fit="cover" />
-          <CloudFile
-            v-else-if="item.startsWith('cloud://')"
-            :id="item"
-            v-slot="{ url }"
-          >
-            <el-image :src="url" fit="cover" />
-          </CloudFile>
+          <transition name="el-zoom-in-center">
+            <el-image
+              v-if="!loading && item.startsWith('http://')"
+              :src="item"
+              fit="cover"
+            />
+            <CloudFile
+              v-else-if="!loading && item.startsWith('cloud://')"
+              :id="item"
+              v-slot="{ url }"
+            >
+              <el-image :src="url" fit="cover" />
+            </CloudFile>
+          </transition>
         </el-carousel-item>
       </el-carousel>
     </el-row>
@@ -154,6 +160,7 @@ export default {
       imageList: [],
       currentPage: 1,
       pageSize: 10,
+      loading: false,
     }
   },
   mounted() {
@@ -174,6 +181,7 @@ export default {
     },
 
     refreshTable() {
+      this.loading = true
       this.$callFunction({
         $url: 'banner/get',
       }).then((res) => {
@@ -183,6 +191,7 @@ export default {
             return item.enabled === 1
           })
           .map((item) => item.img_url)
+        this.loading = false
       })
     },
 
@@ -236,7 +245,7 @@ export default {
         type: 'warning',
       })
         .then(() => {
-          console.log('remove', row)
+          // console.log('remove', row)
           this.removeRow(row)
         })
         .catch(() => {
@@ -265,8 +274,8 @@ export default {
   margin: 0 auto;
   width: 600px;
   .el-image {
-    width: 100%;
-    height: 100%;
+    width: 600px;
+    height: 300px;
   }
 }
 

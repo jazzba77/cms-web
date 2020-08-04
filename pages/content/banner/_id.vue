@@ -25,12 +25,18 @@
                 action=""
               >
                 <el-image
-                  v-if="row.img_url && row.img_url.startsWith('http://')"
+                  v-if="
+                    !loading && row.img_url && row.img_url.startsWith('http://')
+                  "
                   :src="row.img_url"
                   fit="cover"
                 />
                 <CloudFile
-                  v-else-if="row.img_url && row.img_url.startsWith('cloud://')"
+                  v-else-if="
+                    !loading &&
+                    row.img_url &&
+                    row.img_url.startsWith('cloud://')
+                  "
                   :id="row.img_url"
                   v-slot="{ url }"
                 >
@@ -112,6 +118,7 @@ export default {
   },
 
   beforeDestroy() {
+    // console.log('beforeDestroy:', this.fileList)
     if (this.fileList.length > 0) {
       this.$deleteFile(this.fileList)
     }
@@ -144,7 +151,7 @@ export default {
         .then(() => {
           this.$message.success(msg)
           this.fileList = this.fileList.filter((item) => {
-            return item.img_url !== this.row.img_url
+            return item !== this.row.img_url
           })
           this.$router.back()
         })
@@ -177,9 +184,7 @@ export default {
         // console.log('res', res)
         this.row.img_url = res.fileID
         this.fileList.push(res.fileID)
-        console.log('row', this.row)
         this.loading = false
-        this.$forceUpdate()
         this.$forceUpdate()
       })
     },
