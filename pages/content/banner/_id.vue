@@ -3,7 +3,7 @@
     <el-card>
       <el-page-header :content="row._id ? '编辑' : '添加'" @back="goBack">
       </el-page-header>
-      <el-row>
+      <el-row :gutter="20">
         <el-col :span="12">
           <el-form
             ref="rowForm"
@@ -13,7 +13,18 @@
             @submit.native.prevent
           >
             <el-form-item label="标题" prop="title">
-              <el-input v-model="row.title"></el-input>
+              <el-row type="flex" justify="space-between" align="middle">
+                <el-input v-model="row.title"></el-input
+                ><el-button
+                  class="btn-connect"
+                  type="success"
+                  round
+                  icon="el-icon-connection"
+                  size="mini"
+                  @click="connect()"
+                  >关联</el-button
+                >
+              </el-row>
             </el-form-item>
             <el-form-item label="图片" prop="title">
               <el-upload
@@ -86,6 +97,68 @@
             </el-form-item>
           </el-form>
         </el-col>
+        <el-col :span="12">
+          <transition name="el-zoom-in-top">
+            <el-card v-if="showTable" class="table-connect">
+              <div slot="header">
+                <span>商品列表</span>
+              </div>
+              <el-table
+                :data="
+                  tableData.slice(
+                    (currentPage - 1) * pageSize,
+                    currentPage * pageSize
+                  )
+                "
+                highlight-current-row
+              >
+                <el-table-column type="index" label="#" width="50">
+                </el-table-column>
+                <el-table-column prop="name" label="名称" width="250">
+                </el-table-column>
+                <el-table-column prop="list_pic_url" label="图片" width="120">
+                  <template slot-scope="scope">
+                    <!-- <el-image :src="scope.row.img_url" fit="cover" /> -->
+                    <el-image
+                      v-if="
+                        scope.row.list_pic_url &&
+                        scope.row.list_pic_url.startsWith('http://')
+                      "
+                      :src="scope.row.list_pic_url"
+                      fit="cover"
+                    />
+                    <CloudFile
+                      v-else-if="
+                        scope.row.list_pic_url &&
+                        scope.row.list_pic_url.startsWith('cloud://')
+                      "
+                      :id="scope.row.list_pic_url"
+                      v-slot="{ url }"
+                    >
+                      <el-image :src="url" fit="cover" />
+                    </CloudFile>
+                  </template>
+                </el-table-column>
+                <el-table-column label="选择" width="50">
+                  <template slot-scope="scope">
+                    <i
+                      v-if="scope.row.checked"
+                      class="el-icon-success"
+                      :size="20"
+                      @click="check(scope.row)"
+                    ></i>
+                    <i
+                      v-else
+                      class="el-icon-circle-check"
+                      :size="20"
+                      @click="check(scope.row)"
+                    ></i>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-card>
+          </transition>
+        </el-col>
       </el-row>
     </el-card>
   </div>
@@ -106,6 +179,8 @@ export default {
   },
   data() {
     return {
+      currentPage: 1,
+      pageSize: 10,
       loading: false,
       fileList: [],
       rules: {
@@ -114,6 +189,8 @@ export default {
           { required: true, message: '请输入图片链接', trigger: 'blur' },
         ],
       },
+      showTable: false,
+      tableData: [],
     }
   },
 
@@ -130,6 +207,35 @@ export default {
         if (valid) {
           this.saveRow()
         }
+      })
+    },
+
+    check(row) {
+      row.checked = !row.checked
+      if (row.checked) {
+        this.row.title = row.name
+        this.row.img_url = row.list_pic_url
+        this.row.url = '/pages/goods/goods?id=' + row.id
+      }
+    },
+
+    connect() {
+      this.showTable = !this.showTable
+      if (this.showTable) {
+        this.getTableData(1)
+      }
+    },
+
+    getTableData(currentPage, pageSize = 10, name = undefined) {
+      this.$callFunction({
+        $url: 'goods/get',
+        data: {
+          currentPage,
+          pageSize,
+          name,
+        },
+      }).then((res) => {
+        this.tableData = res
       })
     },
 
@@ -221,6 +327,22 @@ export default {
       height: 170px;
       line-height: 170px;
     }
+  }
+}
+
+.table-connect {
+  height: 560px;
+}
+
+.btn-connect {
+  margin-left: 20px;
+}
+
+.el-table {
+  width: 100%;
+  .el-image {
+    width: 100px;
+    height: 50px;
   }
 }
 </style>
