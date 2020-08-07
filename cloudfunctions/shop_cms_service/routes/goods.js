@@ -4,9 +4,13 @@ function get(db, data) {
     is_on_sale: 1,
   }
 
-  if (data.name) {
-    condition.name = data.name
+  console.log('shop_goods get 1 ', data, condition)
+
+  if (data.keyword) {
+    condition.name = new db.RegExp({ regexp: data.keyword })
   }
+
+  console.log('shop_goods get 2', data, condition)
 
   return new Promise((resolve, reject) => {
     db.collection('shop_goods')

@@ -36,7 +36,11 @@
           <el-button plain type="primary" size="small" icon="el-icon-download"
             >导出</el-button
           >
-          <el-button type="danger" size="small" icon="el-icon-delete"
+          <el-button
+            type="danger"
+            size="small"
+            icon="el-icon-delete"
+            @click="remove(selection)"
             >删除</el-button
           >
         </el-row>
@@ -50,14 +54,15 @@
               )
             "
             highlight-current-row
+            stripe
             :row-key="getRowKey"
-            @row-click="clickRow"
+            @selection-change="handleSelectionChange"
           >
             <el-table-column type="selection" reserve-selection width="50">
             </el-table-column>
             <el-table-column type="index" label="#" width="50">
             </el-table-column>
-            <el-table-column prop="title" label="标题" width="150">
+            <el-table-column prop="title" label="标题" width="250">
             </el-table-column>
             <el-table-column prop="img_url" label="图片" width="120">
               <template slot-scope="scope">
@@ -125,7 +130,7 @@
                   type="danger"
                   size="mini"
                   icon="el-icon-delete"
-                  @click="remove(scope.row)"
+                  @click="remove([scope.row._id])"
                   >删除</el-button
                 >
               </template>
@@ -158,6 +163,7 @@ export default {
     return {
       bannerList: [],
       imageList: [],
+      selection: [],
       currentPage: 1,
       pageSize: 10,
       loading: false,
@@ -178,6 +184,10 @@ export default {
     },
     handleCurrentChange(val) {
       this.currentPage = val
+    },
+
+    handleSelectionChange(val) {
+      this.selection = val.map((item) => item._id)
     },
 
     refreshTable() {
@@ -204,9 +214,9 @@ export default {
       })
     },
 
-    clickRow(row) {
-      this.$refs.elTable.setCurrentRow(row)
-    },
+    // clickRow(row) {
+    //   this.$refs.elTable.setCurrentRow(row)
+    // },
 
     changeSort(row) {
       this.$callFunction({
@@ -217,17 +227,43 @@ export default {
       })
     },
 
-    removeRow(row) {
-      this.$callFunction({
-        $url: 'banner/update',
-        data: { _id: row._id, is_delete: 1 },
-      }).then(() => {
+    async remove(ids) {
+      if (ids.length === 0) {
+        this.$message({
+          type: 'info',
+          message: '请先选择记录',
+        })
+        return
+      }
+
+      try {
+        await this.$confirm(
+          '此操作将删除 ' + ids.length + ' 条记录, 是否继续?',
+          '提示',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+          }
+        )
+
+        await this.$callFunction({
+          $url: 'banner/remove',
+          data: { ids },
+        })
+
         this.$message({
           type: 'success',
           message: '删除成功!',
         })
+
         this.refreshTable()
-      })
+      } catch (err) {
+        this.$message({
+          type: 'info',
+          message: '已取消删除: ' + err,
+        })
+      }
     },
 
     goEdit(row = { _id: 'new' }) {
@@ -238,23 +274,23 @@ export default {
       })
     },
 
-    remove(row) {
-      this.$confirm('此操作将删除该记录, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      })
-        .then(() => {
-          // console.log('remove', row)
-          this.removeRow(row)
-        })
-        .catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除',
-          })
-        })
-    },
+    // remove(row) {
+    //   this.$confirm('此操作将删除该记录, 是否继续?', '提示', {
+    //     confirmButtonText: '确定',
+    //     cancelButtonText: '取消',
+    //     type: 'warning',
+    //   })
+    //     .then(() => {
+    //       // console.log('remove', row)
+    //       this.removeRow([row._id])
+    //     })
+    //     .catch(() => {
+    //       this.$message({
+    //         type: 'info',
+    //         message: '已取消删除',
+    //       })
+    //     })
+    // },
   },
 }
 </script>

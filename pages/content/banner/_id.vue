@@ -12,7 +12,7 @@
             label-width="100px"
             @submit.native.prevent
           >
-            <el-form-item label="标题" prop="title">
+            <el-form-item label="标题">
               <el-row type="flex" justify="space-between" align="middle">
                 <el-input v-model="row.title"></el-input
                 ><el-button
@@ -26,7 +26,7 @@
                 >
               </el-row>
             </el-form-item>
-            <el-form-item label="图片" prop="title">
+            <el-form-item label="图片">
               <el-upload
                 v-loading="loading"
                 class="uploader"
@@ -103,18 +103,33 @@
               <div slot="header">
                 <span>商品列表</span>
               </div>
+              <el-row>
+                <el-col :span="12">
+                  <el-input
+                    v-model="keyword"
+                    placeholder="请输入关键字"
+                    prefix-icon="el-icon-search"
+                    @change="keywordChange"
+                  >
+                  </el-input
+                ></el-col>
+              </el-row>
+
               <el-table
-                :data="
-                  tableData.slice(
-                    (currentPage - 1) * pageSize,
-                    currentPage * pageSize
-                  )
-                "
+                :data="tableData"
                 highlight-current-row
+                stripe
+                :row-key="getRowKey"
+                @current-change="currentRowChange"
               >
-                <el-table-column type="index" label="#" width="50">
+                <el-table-column
+                  type="index"
+                  :index="reIndex"
+                  label="#"
+                  width="50"
+                >
                 </el-table-column>
-                <el-table-column prop="name" label="名称" width="250">
+                <el-table-column prop="name" label="标题" width="250">
                 </el-table-column>
                 <el-table-column prop="list_pic_url" label="图片" width="120">
                   <template slot-scope="scope">
@@ -139,23 +154,27 @@
                     </CloudFile>
                   </template>
                 </el-table-column>
-                <el-table-column label="选择" width="50">
+                <el-table-column label="选择" width="50" align="center">
                   <template slot-scope="scope">
                     <i
-                      v-if="scope.row.checked"
                       class="el-icon-success"
-                      :size="20"
-                      @click="check(scope.row)"
-                    ></i>
-                    <i
-                      v-else
-                      class="el-icon-circle-check"
-                      :size="20"
-                      @click="check(scope.row)"
+                      :class="
+                        currentRow && scope.row._id === currentRow._id
+                          ? 'i-checked'
+                          : ''
+                      "
                     ></i>
                   </template>
                 </el-table-column>
               </el-table>
+              <el-row type="flex" justify="center">
+                <el-pagination
+                  :current-page="currentPage"
+                  layout="prev, pager, next"
+                  @current-change="currentPageChange"
+                >
+                </el-pagination>
+              </el-row>
             </el-card>
           </transition>
         </el-col>
@@ -174,14 +193,25 @@ export default {
     if (params.id !== 'new') {
       return { row: params.row || JSON.parse(utils.getCookies(req, 'banner')) }
     } else {
-      return { row: { sort_order: 1, enabled: 0, is_delete: 0 } }
+      return {
+        row: {
+          title: '',
+          url: '',
+          img_url: '',
+          sort_order: 1,
+          enabled: 0,
+          is_delete: 0,
+        },
+      }
     }
   },
   data() {
     return {
       currentPage: 1,
-      pageSize: 10,
+      currentRow: null,
+      pageSize: 5,
       loading: false,
+      keyword: '',
       fileList: [],
       rules: {
         url: [{ required: true, message: '请输入关联链接', trigger: 'blur' }],
@@ -202,6 +232,31 @@ export default {
   },
 
   methods: {
+    keywordChange() {
+      this.currentPage = 1
+      this.getTableData()
+    },
+    reIndex(index) {
+      return (this.currentPage - 1) * this.pageSize + index + 1
+    },
+
+    currentPageChange(currentPage) {
+      this.currentPage = currentPage
+      this.getTableData()
+    },
+
+    currentRowChange(currentRow) {
+      this.currentRow = currentRow
+      this.row.title = currentRow.name
+      this.row.img_url = currentRow.list_pic_url
+      this.row.url = '/pages/goods/goods?id=' + currentRow.id
+      // this.$forceUpdate()
+    },
+
+    getRowKey(row) {
+      return row._id
+    },
+
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
@@ -221,18 +276,19 @@ export default {
 
     connect() {
       this.showTable = !this.showTable
+      this.currentPage = 1
       if (this.showTable) {
-        this.getTableData(1)
+        this.getTableData()
       }
     },
 
-    getTableData(currentPage, pageSize = 10, name = undefined) {
+    getTableData() {
       this.$callFunction({
         $url: 'goods/get',
         data: {
-          currentPage,
-          pageSize,
-          name,
+          currentPage: this.currentPage,
+          pageSize: this.pageSize,
+          keyword: this.keyword,
         },
       }).then((res) => {
         this.tableData = res
@@ -291,7 +347,7 @@ export default {
         this.row.img_url = res.fileID
         this.fileList.push(res.fileID)
         this.loading = false
-        this.$forceUpdate()
+        // this.$forceUpdate()
       })
     },
   },
@@ -330,9 +386,9 @@ export default {
   }
 }
 
-.table-connect {
-  height: 560px;
-}
+// .table-connect {
+//   height: 560px;
+// }
 
 .btn-connect {
   margin-left: 20px;
@@ -341,8 +397,16 @@ export default {
 .el-table {
   width: 100%;
   .el-image {
-    width: 100px;
-    height: 50px;
+    width: 80px;
+    height: 40px;
+  }
+  i {
+    font-size: 20px;
+    color: #8c939d;
+    cursor: pointer;
+  }
+  .i-checked {
+    color: #409eff;
   }
 }
 </style>
