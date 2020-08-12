@@ -15,7 +15,15 @@ exports.main = async (event, context) => {
   })
 
   app.router('banner/get', async (ctx, next) => {
-    ctx.body = await require('./routes/banner').get(db)
+    ctx.body = await require('./routes/banner').get(db, event.data)
+  })
+
+  app.router('banner/get/enabled', async (ctx, next) => {
+    ctx.body = await require('./routes/banner').getEnabled(db)
+  })
+
+  app.router('banner/export', async (ctx, next) => {
+    ctx.body = await require('./routes/banner').export2CSV(db)
   })
 
   app.router('banner/update', async (ctx, next) => {

@@ -22,37 +22,56 @@
     </el-row>
     <el-row>
       <el-card>
-        <el-row type="flex" justify="end">
-          <el-button
-            type="primary"
-            size="small"
-            icon="el-icon-plus"
-            @click="goEdit()"
-            >添加</el-button
-          >
-          <el-button plain type="primary" size="small" icon="el-icon-upload2"
-            >导入</el-button
-          >
-          <el-button plain type="primary" size="small" icon="el-icon-download"
-            >导出</el-button
-          >
-          <el-button
-            type="danger"
-            size="small"
-            icon="el-icon-delete"
-            @click="remove(selection)"
-            >删除</el-button
-          >
+        <el-row type="flex" justify="space-between">
+          <el-col :span="4" :push="1">
+            <el-row type="flex" justify="start">
+              <el-input
+                v-model="keyword"
+                placeholder="请输入关键字"
+                prefix-icon="el-icon-search"
+                @change="keywordChange"
+              >
+              </el-input>
+            </el-row>
+          </el-col>
+          <el-col :span="12">
+            <el-row type="flex" justify="end">
+              <el-button
+                type="primary"
+                size="small"
+                icon="el-icon-plus"
+                @click="goEdit()"
+                >添加</el-button
+              >
+              <el-button
+                plain
+                type="primary"
+                size="small"
+                icon="el-icon-upload2"
+                >导入</el-button
+              >
+              <el-button
+                plain
+                type="primary"
+                size="small"
+                icon="el-icon-download"
+                @click="export2CSV"
+                >导出</el-button
+              >
+              <el-button
+                type="danger"
+                size="small"
+                icon="el-icon-delete"
+                @click="remove(selection)"
+                >删除</el-button
+              >
+            </el-row>
+          </el-col>
         </el-row>
         <el-row>
           <el-table
             ref="elTable"
-            :data="
-              bannerList.slice(
-                (currentPage - 1) * pageSize,
-                currentPage * pageSize
-              )
-            "
+            :data="bannerList"
             highlight-current-row
             stripe
             :row-key="getRowKey"
@@ -60,7 +79,7 @@
           >
             <el-table-column type="selection" reserve-selection width="50">
             </el-table-column>
-            <el-table-column type="index" label="#" width="50">
+            <el-table-column type="index" :index="reIndex" label="#" width="50">
             </el-table-column>
             <el-table-column prop="title" label="标题" width="250">
             </el-table-column>
@@ -144,7 +163,7 @@
             :page-sizes="[10, 20, 50]"
             :page-size="pageSize"
             layout="total, sizes, prev, pager, next, jumper"
-            :total="bannerList.length"
+            :total="total"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
           >
@@ -166,14 +185,34 @@ export default {
       selection: [],
       currentPage: 1,
       pageSize: 10,
+      total: 0,
       loading: false,
+      keyword: '',
     }
   },
   mounted() {
     this.refreshTable()
+    this.refeshImageList()
     this.debouncedChangeSort = utils.debounce(this.changeSort)
   },
   methods: {
+    export2CSV() {
+      this.$callFunction({
+        $url: 'banner/export',
+      }).then((res) => {
+        // console.dir(res)
+      })
+    },
+
+    keywordChange() {
+      this.currentPage = 1
+      this.refreshTable()
+    },
+
+    reIndex(index) {
+      return (this.currentPage - 1) * this.pageSize + index + 1
+    },
+
     getRowKey(row) {
       return row._id
     },
@@ -181,27 +220,38 @@ export default {
     handleSizeChange(val) {
       this.pageSize = val
       this.currentPage = 1
+      this.refreshTable()
     },
     handleCurrentChange(val) {
       this.currentPage = val
+      this.refreshTable()
     },
 
     handleSelectionChange(val) {
       this.selection = val.map((item) => item._id)
     },
 
-    refreshTable() {
+    refeshImageList() {
       this.loading = true
       this.$callFunction({
-        $url: 'banner/get',
+        $url: 'banner/get/enabled',
       }).then((res) => {
-        this.bannerList = res
         this.imageList = res
-          .filter((item) => {
-            return item.enabled === 1
-          })
-          .map((item) => item.img_url)
         this.loading = false
+      })
+    },
+
+    refreshTable() {
+      this.$callFunction({
+        $url: 'banner/get',
+        data: {
+          currentPage: this.currentPage,
+          pageSize: this.pageSize,
+          keyword: this.keyword,
+        },
+      }).then((res) => {
+        this.bannerList = res.data
+        this.total = res.total
       })
     },
 
@@ -211,6 +261,7 @@ export default {
         data: { _id: row._id, enabled: row.enabled },
       }).then(() => {
         this.refreshTable()
+        this.refeshImageList()
       })
     },
 
@@ -224,6 +275,7 @@ export default {
         data: { _id: row._id, sort_order: row.sort_order },
       }).then(() => {
         this.refreshTable()
+        this.refeshImageList()
       })
     },
 
@@ -258,6 +310,7 @@ export default {
         })
 
         this.refreshTable()
+        this.refeshImageList()
       } catch (err) {
         this.$message({
           type: 'info',
