@@ -1,4 +1,27 @@
 import Cookie from 'js-cookie'
+import { parseAsync } from 'json2csv'
+import FileSaver from 'file-saver'
+
+async function export2CSV(jsonData, tablename, fields) {
+  if (Array.isArray(jsonData) && jsonData.length > 0) {
+    const opts = { fields }
+
+    try {
+      const csv = await parseAsync(jsonData, opts)
+      // console.dir('csv', csv)
+      const file = new File([csv], tablename + '_' + getUID() + '.csv', {
+        type: 'text/csv;charset=utf-8',
+      })
+      // console.log('file', file)
+      FileSaver.saveAs(file)
+      return ''
+    } catch (err) {
+      return 'export2CSV err: ' + err
+    }
+  } else {
+    return '导出记录为空'
+  }
+}
 
 /* 函数节流 */
 function throttle(fn, interval) {
@@ -101,6 +124,7 @@ function getCookies(req, key) {
 }
 
 export default {
+  export2CSV,
   throttle,
   debounce,
   getUID,

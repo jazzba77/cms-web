@@ -18,7 +18,9 @@
   "dependencies": {
     "@cloudbase/vue-provider": "^0.1.1",
     "element-ui": "^2.13.2",
+    "file-saver": "^2.0.2",
     "js-cookie": "^2.2.1",
+    "json2csv": "^5.0.1",
     "nuxt": "^2.0.0"
   },
   "devDependencies": {

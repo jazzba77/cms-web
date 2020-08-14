@@ -48,6 +48,7 @@
                 type="primary"
                 size="small"
                 icon="el-icon-upload2"
+                @click="dialogVisible = true"
                 >导入</el-button
               >
               <el-button
@@ -171,6 +172,38 @@
         </el-row>
       </el-card>
     </el-row>
+    <el-dialog
+      :visible.sync="dialogVisible"
+      action=""
+      center
+      top="30vh"
+      width="30%"
+    >
+      <el-row type="flex" justify="center">
+        <el-upload
+          v-loading="loading"
+          drag
+          class="uploader"
+          :show-file-list="false"
+          :before-upload="beforeUpload"
+          :http-request="uploadSuccess"
+          action=""
+          :disabled="loaded"
+        >
+          <i class="el-icon-upload"></i>
+          <div v-if="!loaded" class="el-upload__text">
+            将文件拖到此处，或<em>点击上传</em>
+          </div>
+          <div v-else class="el-upload__text">已上传 {{ filename }}</div>
+        </el-upload>
+      </el-row>
+      <span slot="footer">
+        <el-button size="mini" @click="dialogVisible = false">取 消</el-button>
+        <el-button size="mini" type="primary" @click="dialogVisible = false"
+          >导 入</el-button
+        >
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -187,7 +220,10 @@ export default {
       pageSize: 10,
       total: 0,
       loading: false,
+      loaded: false,
       keyword: '',
+      dialogVisible: false,
+      filename: '',
     }
   },
   mounted() {
@@ -196,12 +232,51 @@ export default {
     this.debouncedChangeSort = utils.debounce(this.changeSort)
   },
   methods: {
-    export2CSV() {
-      this.$callFunction({
-        $url: 'banner/export',
-      }).then((res) => {
-        // console.dir(res)
+    beforeUpload(file) {
+      const isCSV = ['text/csv'].includes(file.type)
+
+      if (!isCSV) {
+        this.$message.error('上传文件只能是 CSV 格式!')
+        return isCSV
+      }
+      this.loading = true
+
+      return true
+    },
+    uploadSuccess(file) {
+      return this.$uploadFile(file, 'shop/csv').then((res) => {
+        this.loading = false
+        this.loaded = true
+        this.filename = file.file.name
+        this.$forceUpdate()
+        console.log('file', file)
+        console.log('res', res)
       })
+    },
+
+    async export2CSV() {
+      const jsonData = await this.$callFunction({
+        $url: 'banner/export',
+      })
+
+      const fields = [
+        '_id',
+        'title',
+        'img_url',
+        'url',
+        'remark',
+        'enabled',
+        'sort_order',
+        'is_delete',
+      ]
+
+      const res = await utils.export2CSV(jsonData, 'banner', fields)
+      if (res !== '') {
+        this.$message({
+          type: 'info',
+          message: res,
+        })
+      }
     },
 
     keywordChange() {
