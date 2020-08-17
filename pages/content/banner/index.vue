@@ -178,6 +178,8 @@
       center
       top="30vh"
       width="30%"
+      @close="handleDialogClose"
+      @open="handleDialogOpen"
     >
       <el-row type="flex" justify="center">
         <el-upload
@@ -192,14 +194,24 @@
         >
           <i class="el-icon-upload"></i>
           <div v-if="!loaded" class="el-upload__text">
-            将文件拖到此处，或<em>点击上传</em>
+            将文件拖到此处，或<em>点击选择待导入文件</em>
           </div>
-          <div v-else class="el-upload__text">已上传 {{ filename }}</div>
+          <div v-else class="el-upload__text">
+            已选择待导入文件 {{ filename }}
+          </div>
         </el-upload>
+      </el-row>
+      <el-row type="flex" justify="center">
+        <el-radio v-model="importType" label="1">覆盖</el-radio>
+        <el-radio v-model="importType" label="2">追加</el-radio>
       </el-row>
       <span slot="footer">
         <el-button size="mini" @click="dialogVisible = false">取 消</el-button>
-        <el-button size="mini" type="primary" @click="dialogVisible = false"
+        <el-button
+          size="mini"
+          :disabled="!loaded"
+          type="primary"
+          @click="import2Db"
           >导 入</el-button
         >
       </span>
@@ -219,11 +231,13 @@ export default {
       currentPage: 1,
       pageSize: 10,
       total: 0,
-      loading: false,
-      loaded: false,
       keyword: '',
       dialogVisible: false,
+      fileList: [],
       filename: '',
+      loading: false,
+      loaded: false,
+      importType: '1',
     }
   },
   mounted() {
@@ -232,23 +246,60 @@ export default {
     this.debouncedChangeSort = utils.debounce(this.changeSort)
   },
   methods: {
+    async import2Db() {
+      try {
+        await this.$callFunction({
+          $url: 'import',
+          data: { fileID: this.fileList[0], importType: this.importType },
+        })
+        this.fileList = []
+        this.dialogVisible = false
+        this.$message({
+          type: 'success',
+          message: '导入成功!',
+        })
+      } catch (err) {
+        this.$message({
+          type: 'error',
+          message: '导入失败! ' + err,
+        })
+      }
+    },
+
     beforeUpload(file) {
       const isCSV = ['text/csv'].includes(file.type)
 
       if (!isCSV) {
-        this.$message.error('上传文件只能是 CSV 格式!')
+        this.$message.error('导入文件只能是 CSV 格式!')
         return isCSV
       }
       this.loading = true
 
       return true
     },
+
+    handleDialogClose() {
+      console.log('fileList', this.fileList)
+      if (this.fileList.length > 0) {
+        this.$deleteFile(this.fileList)
+      }
+    },
+
+    handleDialogOpen() {
+      this.loaded = false
+      this.loading = false
+      this.fileList = []
+      this.filename = ''
+      this.importType = '1'
+    },
+
     uploadSuccess(file) {
       return this.$uploadFile(file, 'shop/csv').then((res) => {
         this.loading = false
         this.loaded = true
         this.filename = file.file.name
-        this.$forceUpdate()
+        this.fileList = [res.fileID]
+        // this.$forceUpdate()
         console.log('file', file)
         console.log('res', res)
       })
@@ -256,7 +307,8 @@ export default {
 
     async export2CSV() {
       const jsonData = await this.$callFunction({
-        $url: 'banner/export',
+        $url: 'export',
+        data: { tablename: 'shop_banner' },
       })
 
       const fields = [
@@ -461,5 +513,9 @@ export default {
 
 .el-input-number {
   width: 100%;
+}
+
+.el-row {
+  padding: 10px;
 }
 </style>

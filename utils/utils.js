@@ -67,7 +67,12 @@ function getUID() {
   HH = HH < 10 ? '0' + HH : HH
   mm = mm < 10 ? '0' + mm : mm
   ss = ss < 10 ? '0' + ss : ss
-  ms = ms < 10 ? '00' + ms : ms < 100 ? '0' + ms : ms
+  if (ms < 10) {
+    ms = '00' + ms
+  } else if (ms > 10 && ms < 100) {
+    ms = '0' + ms
+  }
+  // ms = ms < 10 ? '00' + ms : ms < 100 ? '0' + ms : ms
 
   return (
     '' +

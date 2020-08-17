@@ -84,7 +84,11 @@
               ></el-input-number>
             </el-form-item>
             <el-form-item label="备注">
-              <el-input v-model="row.remark"></el-input>
+              <el-input
+                v-model="row.remark"
+                type="textarea"
+                autosize
+              ></el-input>
             </el-form-item>
             <el-form-item>
               <el-button

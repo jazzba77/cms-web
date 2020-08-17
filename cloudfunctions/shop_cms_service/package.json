@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@cloudbase/node-sdk": "^2.3.1",
     "tcb-admin-node": "^1.23.0",
     "tcb-router": "^1.1.2"
   }

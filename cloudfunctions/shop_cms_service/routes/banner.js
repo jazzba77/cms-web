@@ -8,11 +8,6 @@ async function getEnabled(db) {
   return res.data.map((item) => item.img_url)
 }
 
-async function export2CSV(db) {
-  const res = await db.collection('shop_banner').get()
-  return res.data
-}
-
 async function get(db, data) {
   const _ = db.command
 
@@ -97,7 +92,6 @@ async function add(db, data) {
 
 module.exports = {
   get,
-  export2CSV,
   getEnabled,
   update,
   add,
