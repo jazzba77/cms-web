@@ -4,7 +4,7 @@ import FileSaver from 'file-saver'
 
 async function export2CSV(jsonData, tablename, fields) {
   if (Array.isArray(jsonData) && jsonData.length > 0) {
-    const opts = { fields }
+    const opts = { fields, defaultValue: '' }
 
     try {
       const csv = await parseAsync(jsonData, opts)

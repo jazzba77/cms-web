@@ -15,8 +15,8 @@ async function import2Db(app, db, data) {
       bom: true,
       columns: true,
       cast(value, context) {
-        if (['is_delete', 'enabled', 'sort_order'].includes(context.column)) {
-          return parseInt(value)
+        if (!context.quoting && value && !isNaN(Number(value))) {
+          return Number(value)
         } else {
           return value
         }
