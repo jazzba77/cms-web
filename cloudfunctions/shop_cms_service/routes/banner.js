@@ -39,7 +39,7 @@ async function get(db, data) {
     .get()
 
   const res = await Promise.all([p1, p2])
-  console.log('res', res)
+  // console.log('res', res)
   return { total: res[0].total, data: res[1].data }
   // } else {
   // const res = await db

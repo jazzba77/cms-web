@@ -197,7 +197,8 @@
             将文件拖到此处，或<em>点击选择待导入文件</em>
           </div>
           <div v-else class="el-upload__text">
-            已选择待导入文件 {{ filename }}
+            <div>已选择待导入文件</div>
+            <div>{{ fileName }}</div>
           </div>
         </el-upload>
       </el-row>
@@ -234,10 +235,11 @@ export default {
       keyword: '',
       dialogVisible: false,
       fileList: [],
-      filename: '',
+      fileName: '',
       loading: false,
       loaded: false,
       importType: '1',
+      tableName: 'shop_banner',
     }
   },
   mounted() {
@@ -250,14 +252,21 @@ export default {
       try {
         await this.$callFunction({
           $url: 'import',
-          data: { fileID: this.fileList[0], importType: this.importType },
+          data: {
+            fileID: this.fileList[0],
+            importType: this.importType,
+            tableName: this.tableName,
+          },
         })
         this.fileList = []
         this.dialogVisible = false
+
         this.$message({
           type: 'success',
           message: '导入成功!',
         })
+        this.refreshTable()
+        this.refeshImageList()
       } catch (err) {
         this.$message({
           type: 'error',
@@ -279,7 +288,7 @@ export default {
     },
 
     handleDialogClose() {
-      console.log('fileList', this.fileList)
+      // console.log('fileList', this.fileList)
       if (this.fileList.length > 0) {
         this.$deleteFile(this.fileList)
       }
@@ -289,7 +298,7 @@ export default {
       this.loaded = false
       this.loading = false
       this.fileList = []
-      this.filename = ''
+      this.fileName = ''
       this.importType = '1'
     },
 
@@ -297,11 +306,10 @@ export default {
       return this.$uploadFile(file, 'shop/csv').then((res) => {
         this.loading = false
         this.loaded = true
-        this.filename = file.file.name
+        this.fileName = file.file.name
         this.fileList = [res.fileID]
-        // this.$forceUpdate()
-        console.log('file', file)
-        console.log('res', res)
+        // console.log('file', file)
+        // console.log('res', res)
       })
     },
 
@@ -392,10 +400,6 @@ export default {
       })
     },
 
-    // clickRow(row) {
-    //   this.$refs.elTable.setCurrentRow(row)
-    // },
-
     changeSort(row) {
       this.$callFunction({
         $url: 'banner/update',
@@ -453,24 +457,6 @@ export default {
         params: { id: row._id, row },
       })
     },
-
-    // remove(row) {
-    //   this.$confirm('此操作将删除该记录, 是否继续?', '提示', {
-    //     confirmButtonText: '确定',
-    //     cancelButtonText: '取消',
-    //     type: 'warning',
-    //   })
-    //     .then(() => {
-    //       // console.log('remove', row)
-    //       this.removeRow([row._id])
-    //     })
-    //     .catch(() => {
-    //       this.$message({
-    //         type: 'info',
-    //         message: '已取消删除',
-    //       })
-    //     })
-    // },
   },
 }
 </script>
@@ -479,12 +465,6 @@ export default {
 .container {
   padding: 20px;
 }
-// .el-row {
-//   margin-bottom: 10px;
-//   &:last-child {
-//     margin-bottom: 0px;
-//   }
-// }
 
 .el-carousel {
   margin: 0 auto;
@@ -517,5 +497,9 @@ export default {
 
 .el-row {
   padding: 10px;
+}
+
+.el-upload__text {
+  line-height: 30px;
 }
 </style>
